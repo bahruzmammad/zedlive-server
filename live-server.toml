@@ -1,0 +1,28 @@
+# Rust Live Server 0.0.1-alpha
+# Flat TOML keys are intentional in this alpha release.
+
+port = 5500
+host = "127.0.0.1"
+hostname = "127.0.0.1"
+open_browser = true
+directory_listing = true
+index_file = "index.html"
+
+reload = true
+full_reload = false
+wait_ms = 150
+inject_client = true
+watch = true
+recursive = true
+ignore = [".git", "target", "node_modules", ".zed"]
+
+cors = false
+allow_origins = ["*"]
+allow_methods = ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
+allow_headers = ["*"]
+allow_credentials = false
+
+# Example routing values:
+# proxy = { "/api" = "http://127.0.0.1:3000" }
+# mount = { "/shared" = "../shared" }
+# headers = { "X-Live-Server" = "0.0.1-alpha" }

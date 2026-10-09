@@ -1,0 +1,7 @@
+.DS_Store
+Thumbs.db
+/target/
+.live-server/
+*.local.toml
+/ALL-PROJECT-SOURCE.txt
+/Rust-Live-Server-*-windows-x64.zip

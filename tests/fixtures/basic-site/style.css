@@ -1,0 +1,8 @@
+.card {
+  max-width: 900px;
+  margin: 10vh auto;
+  padding: 48px;
+  border: 1px solid #ccc;
+  border-radius: 18px;
+  font-family: system-ui, sans-serif;
+}
