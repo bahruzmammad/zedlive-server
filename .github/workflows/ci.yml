@@ -17,6 +17,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-wasip2
       - name: Check formatting
         run: cargo fmt --all -- --check
       - name: Check all targets
@@ -27,3 +29,5 @@ jobs:
         run: cargo test --all-targets
       - name: Build release
         run: cargo build --release
+      - name: Check Zed MCP extension
+        run: cargo check --manifest-path zed-extension/Cargo.toml --target wasm32-wasip2

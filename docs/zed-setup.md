@@ -1,6 +1,6 @@
 # Zed setup
 
-Zed does not currently expose a general-purpose extension API for registering project commands, status-bar widgets, file-tree actions, or a settings UI. This project therefore integrates through Zed's supported project-local task templates. It is a native CLI, not a Zed extension, and is not installable from Zed's extension registry. Do not use **Install Dev Extension** on this repository: Zed would try to compile the native server as a WebAssembly extension and fail.
+The native server is a CLI. The `zed-extension/` directory contains a separate Zed MCP server extension that exposes server controls in the Agent Panel; it does not register custom project commands in the Command Palette. The extension is not yet published. Zed's task templates are also supported for direct task-spawn controls.
 
 ## Install the CLI
 
@@ -9,6 +9,14 @@ Install Rust and Cargo, clone this repository, then run `cargo install --path .`
 If Zed reports that `live-server` cannot be found, install it with Cargo as above, make sure Cargo's binary directory is on the environment used to launch Zed, and restart Zed. The project does not hard-code a machine-specific binary path or download/install a native binary through an extension.
 
 To remove the installed CLI, run `cargo uninstall live-server`. This removes the Cargo-installed executable and does not delete project files or `.live-server` state.
+
+## Use MCP tools in the Agent Panel
+
+Install the CLI and ensure `live-server` is on the environment used to launch Zed. Then install the published **Live Server** extension when available, or install `zed-extension/` as a dev extension for local testing. The extension starts `live-server mcp` and exposes tools for start, stop, restart, status, and opening the browser. Tools default to the active Zed worktree; an optional project path is confined to that workspace.
+
+For safety, the MCP server only stops a server process that it started in its current session. If the MCP session restarts, use the CLI or task workflow to control servers started by the previous session.
+
+The extension checks for the CLI by running `live-server --version` through Zed's extension process API. Allow that command when prompted; if the executable is missing, install it and restart Zed.
 
 ## Use tasks in every Zed project
 

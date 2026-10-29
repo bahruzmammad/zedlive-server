@@ -7,12 +7,13 @@ use live_server::{
 };
 use std::{
     fs,
+    io::Write,
     path::{Path, PathBuf},
+    process::{Child, Command, Stdio},
     sync::atomic::{AtomicU64, Ordering},
 };
 #[cfg(unix)]
 use std::{
-    process::{Child, Command, Stdio},
     thread,
     time::{Duration, Instant},
 };
@@ -65,6 +66,25 @@ impl TestDirectory {
 impl Drop for TestDirectory {
     fn drop(&mut self) {
         let _ = fs::remove_dir_all(&self.0);
+    }
+}
+
+struct McpChildGuard(Option<Child>);
+
+impl McpChildGuard {
+    fn wait_with_output(mut self) -> std::process::Output {
+        self.0.take().unwrap().wait_with_output().unwrap()
+    }
+}
+
+impl Drop for McpChildGuard {
+    fn drop(&mut self) {
+        if let Some(child) = &mut self.0
+            && child.try_wait().ok().flatten().is_none()
+        {
+            let _ = child.kill();
+            let _ = child.wait();
+        }
     }
 }
 
@@ -174,6 +194,132 @@ async fn missing_asset_returns_404() {
         .unwrap();
     assert_eq!(response.status(), reqwest::StatusCode::NOT_FOUND);
     task.abort();
+}
+
+#[test]
+fn mcp_tools_manage_only_servers_inside_the_active_workspace() {
+    let temp = TestDirectory::new();
+    fs::write(
+        temp.path().join("index.html"),
+        "<html>mcp integration</html>",
+    )
+    .unwrap();
+    fs::write(temp.path().join("live-server.toml"), "port = 0\n").unwrap();
+    let other_project = temp.path().join("other");
+    fs::create_dir(&other_project).unwrap();
+    fs::write(other_project.join("index.html"), "<html>mcp cleanup</html>").unwrap();
+    fs::write(other_project.join("live-server.toml"), "port = 0\n").unwrap();
+
+    let mut mcp = McpChildGuard(Some(
+        Command::new(env!("CARGO_BIN_EXE_live-server"))
+            .arg("mcp")
+            .current_dir(temp.path())
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::null())
+            .spawn()
+            .unwrap(),
+    ));
+
+    let requests = [
+        serde_json::json!({
+            "jsonrpc": "2.0",
+            "id": 1,
+            "method": "initialize",
+            "params": { "protocolVersion": "2025-11-25" }
+        }),
+        serde_json::json!({ "jsonrpc": "2.0", "method": "notifications/initialized" }),
+        serde_json::json!({ "jsonrpc": "2.0", "id": 2, "method": "tools/list" }),
+        serde_json::json!({
+            "jsonrpc": "2.0",
+            "id": 3,
+            "method": "tools/call",
+            "params": {
+                "name": "live_server_status",
+                "arguments": { "root": ".." }
+            }
+        }),
+        serde_json::json!({
+            "jsonrpc": "2.0",
+            "id": 4,
+            "method": "tools/call",
+            "params": { "name": "live_server_start", "arguments": {} }
+        }),
+        serde_json::json!({
+            "jsonrpc": "2.0",
+            "id": 5,
+            "method": "tools/call",
+            "params": { "name": "live_server_status", "arguments": {} }
+        }),
+        serde_json::json!({
+            "jsonrpc": "2.0",
+            "id": 6,
+            "method": "tools/call",
+            "params": { "name": "live_server_restart", "arguments": {} }
+        }),
+        serde_json::json!({
+            "jsonrpc": "2.0",
+            "id": 7,
+            "method": "tools/call",
+            "params": { "name": "live_server_stop", "arguments": {} }
+        }),
+        serde_json::json!({
+            "jsonrpc": "2.0",
+            "id": 8,
+            "method": "tools/call",
+            "params": {
+                "name": "live_server_start",
+                "arguments": { "root": "other" }
+            }
+        }),
+    ];
+    let stdin = mcp.0.as_mut().unwrap().stdin.as_mut().unwrap();
+    for request in requests {
+        serde_json::to_writer(&mut *stdin, &request).unwrap();
+        stdin.write_all(b"\n").unwrap();
+    }
+    drop(mcp.0.as_mut().unwrap().stdin.take());
+
+    let output = mcp.wait_with_output();
+    assert!(
+        output.status.success(),
+        "MCP server failed: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let responses: Vec<serde_json::Value> = String::from_utf8_lossy(&output.stdout)
+        .lines()
+        .map(|line| serde_json::from_str(line).unwrap())
+        .collect();
+    assert_eq!(responses.len(), 8);
+    assert_eq!(responses[2]["result"]["isError"], true);
+    assert!(
+        responses[2]["result"]["content"][0]["text"]
+            .as_str()
+            .unwrap()
+            .contains("outside the active Zed workspace")
+    );
+    for (response, expected) in responses[3..].iter().zip([
+        "started at",
+        "is running at",
+        "started at",
+        "stopped",
+        "started at",
+    ]) {
+        assert_eq!(response["result"]["isError"], false);
+        assert!(
+            response["result"]["content"][0]["text"]
+                .as_str()
+                .unwrap()
+                .contains(expected)
+        );
+    }
+    assert!(
+        !other_project
+            .join(".live-server")
+            .join("server.json")
+            .exists(),
+        "MCP shutdown did not stop its owned server"
+    );
 }
 
 #[tokio::test]
