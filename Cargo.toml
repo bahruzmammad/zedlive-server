@@ -2,7 +2,7 @@
 name = "live-server"
 version = "0.0.1-alpha"
 edition = "2024"
-description = "A fast Rust live development server for frontend projects"
+description = "A Rust live development server with Zed project-task integration"
 license = "MIT"
 readme = "README.md"
 

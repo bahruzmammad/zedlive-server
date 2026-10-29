@@ -35,6 +35,14 @@ pub async fn run(options: RunOptions) -> Result<(), String> {
 
     let state = http::AppState::new(runtime_config.clone());
     let app = http::router(state.clone());
+    let _watcher = watcher::start(
+        runtime_config.watched_roots(),
+        runtime_config.watch.clone(),
+        state.reload_tx.clone(),
+        runtime_config.reload.full_reload,
+        runtime_config.reload.wait_ms,
+    )
+    .await?;
     let started_at = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .unwrap_or_default()
@@ -68,14 +76,6 @@ pub async fn run(options: RunOptions) -> Result<(), String> {
     {
         eprintln!("browser: {error}");
     }
-
-    let _watcher = watcher::start(
-        runtime_config.watched_roots(),
-        runtime_config.watch.clone(),
-        state.reload_tx.clone(),
-        runtime_config.reload.full_reload,
-        runtime_config.reload.wait_ms,
-    );
 
     let result = if runtime_config.https.enabled {
         https::serve(
@@ -120,9 +120,28 @@ async fn shutdown_signal() {
     let ctrl_c = async {
         let _ = tokio::signal::ctrl_c().await;
     };
-    tokio::select! {
-        _ = ctrl_c => {}
+
+    #[cfg(unix)]
+    {
+        let terminate = async {
+            match tokio::signal::unix::signal(tokio::signal::unix::SignalKind::terminate()) {
+                Ok(mut signal) => {
+                    let _ = signal.recv().await;
+                }
+                Err(error) => {
+                    eprintln!("shutdown: cannot register SIGTERM handler: {error}");
+                    std::future::pending::<()>().await;
+                }
+            }
+        };
+        tokio::select! {
+            _ = ctrl_c => {}
+            _ = terminate => {}
+        }
     }
+
+    #[cfg(not(unix))]
+    ctrl_c.await;
 }
 
 fn browser_host(host: IpAddr) -> String {

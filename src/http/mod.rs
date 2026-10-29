@@ -70,7 +70,7 @@ pub async fn bind_listener(
         }
         PortMode::NextAvailable => {
             let start = if port == 0 { 5500 } else { port };
-            let end = start.saturating_add(1000).min(u16::MAX);
+            let end = start.saturating_add(1000);
             for candidate in start..=end {
                 match TcpListener::bind(SocketAddr::new(host, candidate)).await {
                     Ok(listener) => {
@@ -234,8 +234,23 @@ async fn handle_request(State(state): State<AppState>, request: Request) -> Resp
     let file = if requested.is_file() {
         Some(requested.clone())
     } else if requested.is_dir() {
-        let index = requested.join(&state.config.index_file);
-        if index.is_file() { Some(index) } else { None }
+        let index_path = format!(
+            "{}/{}",
+            local_path.trim_end_matches('/'),
+            state.config.index_file
+        );
+        match security::safe_join(&root, &index_path) {
+            Ok(index) if index.is_file() => Some(index),
+            Ok(_) => None,
+            Err(error) => {
+                return simple(
+                    StatusCode::FORBIDDEN,
+                    &format!("403 Forbidden: {error}"),
+                    &state.config,
+                    origin.as_ref(),
+                );
+            }
+        }
     } else {
         None
     };
@@ -280,12 +295,11 @@ async fn handle_request(State(state): State<AppState>, request: Request) -> Resp
 fn mount_target(config: &ServerConfig, path: &str) -> Option<(PathBuf, String)> {
     let mut best: Option<&MountRule> = None;
     for m in &config.mounts {
-        if path == m.url_path
-            || path.starts_with(&(m.url_path.trim_end_matches('/').to_string() + "/"))
+        if (path == m.url_path
+            || path.starts_with(&(m.url_path.trim_end_matches('/').to_string() + "/")))
+            && best.is_none_or(|b| m.url_path.len() > b.url_path.len())
         {
-            if best.is_none_or(|b| m.url_path.len() > b.url_path.len()) {
-                best = Some(m);
-            }
+            best = Some(m);
         }
     }
     best.map(|m| {
@@ -316,20 +330,21 @@ async fn serve_file(
             .as_str(),
         "html" | "htm"
     );
-    if is_html && config.reload.enabled && config.reload.inject_client {
-        if let Ok(text) = String::from_utf8(bytes.clone()) {
-            if !text.contains("/__live_server/live-reload.js") {
-                let script = "<script src=\"/__live_server/live-reload.js\"></script>";
-                let lower = text.to_ascii_lowercase();
-                let at = lower
-                    .find("</body>")
-                    .or_else(|| lower.find("</html>"))
-                    .unwrap_or(text.len());
-                let mut out = text;
-                out.insert_str(at, script);
-                bytes = out.into_bytes();
-            }
-        }
+    if is_html
+        && config.reload.enabled
+        && config.reload.inject_client
+        && let Ok(text) = String::from_utf8(bytes.clone())
+        && !text.contains("/__live_server/live-reload.js")
+    {
+        let script = "<script src=\"/__live_server/live-reload.js\"></script>";
+        let lower = text.to_ascii_lowercase();
+        let at = lower
+            .find("</body>")
+            .or_else(|| lower.find("</html>"))
+            .unwrap_or(text.len());
+        let mut out = text;
+        out.insert_str(at, script);
+        bytes = out.into_bytes();
     }
     let mut response = Response::new(if *method == Method::HEAD {
         Body::empty()
@@ -448,12 +463,10 @@ fn decorate(response: &mut Response<Body>, config: &ServerConfig, origin: Option
     }
     if config.cors.enabled {
         if let Some(origin) = origin {
-            let allowed = if config
-                .cors
-                .allow_origins
-                .iter()
-                .any(|x| x == "*" || x.eq_ignore_ascii_case(origin.to_str().unwrap_or("")))
-            {
+            let allowed = if config.cors.allow_origins.iter().any(|allowed| {
+                allowed.eq_ignore_ascii_case(origin.to_str().unwrap_or(""))
+                    || (allowed == "*" && !config.cors.allow_credentials)
+            }) {
                 origin.clone()
             } else {
                 HeaderValue::from_static("")
@@ -463,7 +476,9 @@ fn decorate(response: &mut Response<Body>, config: &ServerConfig, origin: Option
                     .headers_mut()
                     .insert("access-control-allow-origin", allowed);
             }
-        } else if config.cors.allow_origins.iter().any(|x| x == "*") {
+        } else if !config.cors.allow_credentials
+            && config.cors.allow_origins.iter().any(|x| x == "*")
+        {
             response
                 .headers_mut()
                 .insert("access-control-allow-origin", HeaderValue::from_static("*"));
