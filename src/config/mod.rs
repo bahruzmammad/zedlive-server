@@ -265,6 +265,7 @@ pub enum ConfigError {
     InvalidBrowser(String),
     InvalidWait(u64),
     InvalidIndex,
+    InvalidCors,
     InvalidSpaEntry,
     InvalidHttps,
     InvalidProxy(String),
@@ -286,7 +287,18 @@ impl fmt::Display for ConfigError {
             Self::InvalidPortMode(v) => write!(f, "invalid port mode: {v}"),
             Self::InvalidBrowser(v) => write!(f, "invalid browser: {v}"),
             Self::InvalidWait(v) => write!(f, "wait must be <= 60000 ms, got {v}"),
-            Self::InvalidIndex => write!(f, "index_file cannot be empty"),
+            Self::InvalidIndex => {
+                write!(
+                    f,
+                    "index_file must be a relative path inside the server root"
+                )
+            }
+            Self::InvalidCors => {
+                write!(
+                    f,
+                    "CORS credentials cannot be enabled with a wildcard origin"
+                )
+            }
             Self::InvalidSpaEntry => {
                 write!(f, "SPA entry file must be a relative file inside root")
             }
@@ -518,11 +530,31 @@ impl ServerConfig {
         if !self.root.is_dir() {
             return Err(ConfigError::InvalidRoot(self.root.clone()));
         }
-        if self.index_file.trim().is_empty() {
+        let index_path = Path::new(&self.index_file);
+        if self.index_file.trim().is_empty()
+            || self.index_file.starts_with('/')
+            || index_path.is_absolute()
+            || index_path
+                .components()
+                .any(|component| matches!(component, std::path::Component::ParentDir))
+            || !index_path
+                .components()
+                .any(|component| matches!(component, std::path::Component::Normal(_)))
+            || self
+                .index_file
+                .chars()
+                .any(|character| matches!(character, '\\' | ':'))
+        {
             return Err(ConfigError::InvalidIndex);
         }
         if self.reload.wait_ms > 60_000 {
             return Err(ConfigError::InvalidWait(self.reload.wait_ms));
+        }
+        if self.cors.enabled
+            && self.cors.allow_credentials
+            && self.cors.allow_origins.iter().any(|origin| origin == "*")
+        {
+            return Err(ConfigError::InvalidCors);
         }
         let entry = Path::new(&self.spa.entry_file);
         if self.spa.enabled
@@ -611,8 +643,10 @@ mod tests {
     }
     #[test]
     fn port_zero_means_random_is_allowed() {
-        let mut c = ServerConfig::default();
-        c.port = 0;
+        let c = ServerConfig {
+            port: 0,
+            ..ServerConfig::default()
+        };
         assert_eq!(c.port, 0);
     }
     #[test]
@@ -632,5 +666,39 @@ mod tests {
             )
             .unwrap();
         assert_eq!(config.preferred_hostname.as_deref(), Some("dev.local"));
+    }
+
+    #[test]
+    fn index_file_must_be_a_relative_path_inside_root() {
+        let root = std::env::temp_dir();
+        let mut config = ServerConfig {
+            root,
+            ..ServerConfig::default()
+        };
+
+        for index_file in ["", "../index.html", "/tmp/index.html", r"..\index.html"] {
+            config.index_file = index_file.into();
+            assert_eq!(config.validate(), Err(ConfigError::InvalidIndex));
+        }
+
+        for index_file in ["pages/index.html", "./pages/index.html"] {
+            config.index_file = index_file.into();
+            assert!(config.validate().is_ok());
+        }
+    }
+
+    #[test]
+    fn cors_rejects_wildcard_origins_with_credentials() {
+        let config = ServerConfig {
+            root: std::env::temp_dir(),
+            cors: CorsConfig {
+                enabled: true,
+                allow_credentials: true,
+                ..CorsConfig::default()
+            },
+            ..ServerConfig::default()
+        };
+
+        assert_eq!(config.validate(), Err(ConfigError::InvalidCors));
     }
 }

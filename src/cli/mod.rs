@@ -410,7 +410,10 @@ impl Cli {
     }
 
     pub fn help() -> &'static str {
-        r#"Rust Live Server 0.0.1-alpha
+        concat!(
+            "Rust Live Server ",
+            env!("CARGO_PKG_VERSION"),
+            r#"
 
 USAGE:
   live-server [start|run] [ROOT] [OPTIONS]
@@ -476,6 +479,7 @@ EXAMPLES:
   live-server open ./site
   live-server status ./site
 "#
+        )
     }
 }
 
@@ -578,6 +582,11 @@ mod tests {
     #[test]
     fn help_flag_is_parsed() {
         assert!(matches!(Cli::parse(["--help"]).unwrap(), CliCommand::Help));
+    }
+
+    #[test]
+    fn help_uses_the_package_version() {
+        assert!(Cli::help().contains(crate::VERSION));
     }
 
     #[test]

@@ -11,6 +11,7 @@ use std::{
     time::{Duration, Instant},
 };
 use tokio::sync::broadcast;
+use tokio::sync::oneshot;
 
 pub struct WatcherHandle {
     stop: Arc<AtomicBool>,
@@ -30,19 +31,20 @@ impl Drop for WatcherHandle {
     }
 }
 
-pub fn start(
+pub async fn start(
     roots: Vec<(PathBuf, String)>,
     config: WatchConfig,
     sender: broadcast::Sender<reload::ReloadEvent>,
     full_reload: bool,
     wait_ms: u64,
-) -> Option<WatcherHandle> {
+) -> Result<Option<WatcherHandle>, String> {
     if !config.enabled {
-        return None;
+        return Ok(None);
     }
 
     let stop = Arc::new(AtomicBool::new(false));
     let stop_thread = Arc::clone(&stop);
+    let (ready_tx, ready_rx) = oneshot::channel();
 
     let join = tokio::task::spawn_blocking(move || {
         let (tx, rx) = mpsc::channel();
@@ -51,7 +53,7 @@ pub fn start(
         }) {
             Ok(watcher) => watcher,
             Err(error) => {
-                eprintln!("watcher: {error}");
+                let _ = ready_tx.send(Err(format!("cannot initialize file watcher: {error}")));
                 return;
             }
         };
@@ -64,9 +66,11 @@ pub fn start(
 
         for (root, _) in &roots {
             if let Err(error) = watcher.watch(root, mode) {
-                eprintln!("watcher: cannot watch {}: {error}", root.display());
+                let _ = ready_tx.send(Err(format!("cannot watch {}: {error}", root.display())));
+                return;
             }
         }
+        let _ = ready_tx.send(Ok(()));
 
         let debounce = Duration::from_millis(wait_ms);
         let mut last_seen: HashMap<PathBuf, Instant> = HashMap::new();
@@ -117,10 +121,14 @@ pub fn start(
         }
     });
 
-    Some(WatcherHandle {
-        stop,
-        join: Some(join),
-    })
+    match ready_rx.await {
+        Ok(Ok(())) => Ok(Some(WatcherHandle {
+            stop,
+            join: Some(join),
+        })),
+        Ok(Err(error)) => Err(error),
+        Err(_) => Err("file watcher stopped before it was ready".into()),
+    }
 }
 
 fn interesting(path: &Path, extensions: &[String]) -> bool {

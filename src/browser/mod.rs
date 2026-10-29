@@ -1,6 +1,7 @@
 use crate::config::Browser;
+#[cfg(windows)]
+use std::env;
 use std::{
-    env,
     path::Path,
     process::{Command, Stdio},
 };
@@ -53,10 +54,10 @@ fn run_named_browser(name: &str, candidates: Vec<String>, url: &str) -> Result<(
     for candidate in candidates {
         let path_exists =
             candidate.contains(std::path::MAIN_SEPARATOR) && Path::new(&candidate).is_file();
-        if path_exists || !candidate.contains(std::path::MAIN_SEPARATOR) {
-            if Command::new(&candidate).arg(url).spawn().is_ok() {
-                return Ok(());
-            }
+        if (path_exists || !candidate.contains(std::path::MAIN_SEPARATOR))
+            && Command::new(&candidate).arg(url).spawn().is_ok()
+        {
+            return Ok(());
         }
     }
     open_default(url).map_err(|e| format!("{name} not found; default browser failed: {e}"))

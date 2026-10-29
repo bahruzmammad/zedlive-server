@@ -1,7 +1,0 @@
-id = "rust-live-server-tools"
-name = "Rust Live Server Tools"
-description = "Development notes and future Zed extension packaging for Rust Live Server"
-version = "0.0.1"
-schema_version = 1
-authors = ["Rust Live Server contributors"]
-repository = "https://github.com/example/live-server"

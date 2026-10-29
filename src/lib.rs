@@ -14,4 +14,4 @@ pub mod spa;
 pub mod watcher;
 pub mod websocket;
 
-pub const VERSION: &str = "0.0.1-alpha";
+pub const VERSION: &str = env!("CARGO_PKG_VERSION");
