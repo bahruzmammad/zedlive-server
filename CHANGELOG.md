@@ -16,5 +16,6 @@
 - Added the maintainer-confirmed MIT license and derived CLI version/help text from Cargo package metadata.
 - Added an MCP stdio server with seven Agent Panel tools for server lifecycle, project configuration diagnostics, and same-server route preview.
 - Added a Zed MCP extension that launches the separately installed CLI, with installation instructions and session-owned stop protection.
+- Added the MIT license to the nested Zed extension package for registry validation.
 
-This is not a v1.0.0 release. The MCP extension still needs manual Zed verification and registry submission; CLI process ownership and atomic duplicate-instance protection also remain open. The MCP extension and CLI require fresh cross-platform CI verification.
+This is not a v1.0.0 release. The latest MCP extension and CLI checks pass on Linux, macOS, and Windows; the Marketplace PR is open and awaits maintainer review. End-to-end Zed verification, CLI process ownership, and atomic duplicate-instance protection remain open.

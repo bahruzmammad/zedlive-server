@@ -5,7 +5,7 @@
 
 A local static web server and live-reload tool for frontend projects in **Zed**. This repository provides a native Rust CLI, Zed task templates, and a Zed MCP extension that exposes Live Server controls in the Agent Panel.
 
-> **Status: alpha.** Linux, macOS, and Windows CI passed on the current `main` before the MCP extension was added. The new extension still needs build/CI and manual Zed verification before marketplace submission. MCP extensions are planned for deprecation by Zed in favor of the official MCP Registry; see [release readiness](docs/release.md).
+> **Status: alpha.** The MCP extension and CLI pass Linux, macOS, and Windows CI on the current feature branch. Marketplace submission is open as [zed-industries/extensions#8174](https://github.com/zed-industries/extensions/pull/8174), awaiting maintainer review. Manual end-to-end testing in Zed is still outstanding. MCP extensions are planned for deprecation by Zed in favor of the official MCP Registry; see [release readiness](docs/release.md).
 
 ## Features
 
@@ -41,7 +41,7 @@ The Zed extension is in [`zed-extension/`](zed-extension/). It runs `live-server
 
 All tools default to the active Zed workspace and reject project paths outside that workspace. Route preview rejects external hosts and dot-segment traversal. Start serves static files; it does not invoke framework build scripts.
 
-The Zed registry already lists a [`live-server` extension](https://zed.dev/extensions/live-server). This MCP extension is a separate Agent Panel tool interface with project diagnostics and route preview; registry maintainers must assess whether its functionality is sufficiently distinct before submission. It is not yet published. For local development, install it as a dev extension by selecting `zed-extension/` in Zed's **Install Dev Extension** flow. Manual Zed testing is required before any registry submission.
+The Zed registry already lists a [`live-server` extension](https://zed.dev/extensions/live-server). This MCP extension is a separate Agent Panel tool interface with project diagnostics and route preview; registry maintainers will assess whether its functionality is sufficiently distinct. Its registry PR is open and pending review. For local development, install it as a dev extension by selecting `zed-extension/` in Zed's **Install Dev Extension** flow. Manual Zed lifecycle and browser-reload testing is still needed.
 
 **MCP lifecycle note:** the MCP server only stops processes it started in its current session. This avoids terminating an unrelated process through stale project state. It stops its owned servers when the MCP session shuts down normally. Servers started with a Zed task or another CLI session can still be controlled using the CLI/tasks.
 

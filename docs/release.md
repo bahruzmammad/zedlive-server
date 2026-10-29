@@ -10,7 +10,7 @@ It serves HTML, CSS, JavaScript, and static assets directly. Editing a watched H
 
 The repository now includes a real MCP extension at `zed-extension/`. It starts the separately installed native `live-server mcp` process and exposes seven Agent Panel tools: server lifecycle controls, project configuration diagnostics, and same-server route preview. It does not register custom project commands in the Command Palette, toolbar/status-bar controls, or task registration.
 
-The extension has not yet been manually tested in Zed or submitted to the registry. The registry already contains a [`live-server` extension](https://zed.dev/extensions/live-server), so maintainers must determine whether this Agent Panel interface and its project-diagnostic/route-preview tools are distinct enough to merit another listing; consider contributing to the existing project instead. Zed plans to deprecate MCP server extensions in favor of the official MCP Registry, and the publishing prerequisites ask MCP server authors to publish there as well. Address the overlap, migration/distribution, and manual-testing requirements before submitting. Do not describe this integration as Command Palette task controls.
+The Marketplace submission is open as [`zed-industries/extensions#8174`](https://github.com/zed-industries/extensions/pull/8174). Registry packaging, sorting, Danger, and CLA checks pass; maintainer review and merge are pending. The repository already contains a [`live-server` extension](https://zed.dev/extensions/live-server), so maintainers must assess whether this Agent Panel interface and its project-diagnostic/route-preview tools are distinct enough to merit another listing. End-to-end lifecycle and browser-reload testing in Zed is still outstanding. Zed plans to deprecate MCP server extensions in favor of the official MCP Registry, so distribution may need migration. Do not describe this integration as Command Palette task controls or as already published.
 
 See [Zed setup](zed-setup.md) for installing the CLI and using the extension or tasks.
 
@@ -24,7 +24,7 @@ Do not tag or announce `v1.0.0` until all of these are true:
 - The release checklist in `TODO.md` has no unresolved P0/P1 items.
 - `Cargo.toml`'s MIT declaration matches the checked-in `LICENSE`.
 
-The project remains alpha. Verify the extension's WASM build in CI, manually test the extension in Zed, and review CI results before promotion or marketplace submission.
+The project remains alpha. The latest pushed extension build and Linux/macOS/Windows CI pass; manually test the extension in Zed and wait for Marketplace maintainer review before claiming publication or promoting a release.
 
 ## Release procedure after the gates pass
 
@@ -34,4 +34,4 @@ The project remains alpha. Verify the extension's WASM build in CI, manually tes
 4. Confirm the Linux, Windows, and macOS CI jobs are green and review the exact commit diff.
 5. Commit the release changes, create the `v1.0.0` tag, and push the commit and tag only with maintainer authorization.
 
-This procedure releases the CLI and Zed integrations. Submitting the MCP extension requires its own manual Zed verification, an MCP Registry distribution plan, and a separate registry PR.
+This procedure releases the CLI and Zed integrations. The MCP extension has a separate Marketplace PR; publication depends on maintainer review/merge, manual Zed verification, and addressing Zed's MCP Registry migration guidance.
