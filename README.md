@@ -23,11 +23,11 @@ This serves files directly. It does not compile TypeScript or JSX, run npm scrip
 Install the stable Rust toolchain, then install the native server:
 
 ```sh
-cargo install --git https://github.com/bahruzmammad/zedlive-server
+cargo install --git https://github.com/bahruzmammad/zedlive-server --branch live-server-mcp-extension --force
 live-server --version
 ```
 
-For local development, clone this repository and run `cargo install --path .`. Update a Git-installed CLI with `cargo install --git https://github.com/bahruzmammad/zedlive-server --force`. Uninstall it with `cargo uninstall live-server`. There are no prebuilt release binaries yet.
+The Zed MCP tools require the `live-server-mcp-extension` branch until the change is merged into `main`. Make sure `$HOME/.cargo/bin` comes before other commands named `live-server` on the PATH used to launch Zed; on Fish, run `fish_add_path --prepend $HOME/.cargo/bin`. Update with the same install command. Uninstall with `cargo uninstall live-server`. There are no prebuilt release binaries yet.
 
 ## Use in Zed
 

@@ -4,7 +4,13 @@ The native server is a CLI. The `zed-extension/` directory contains a separate Z
 
 ## Install the CLI
 
-Install Rust and Cargo, clone this repository, then run `cargo install --path .` from its root. The binary is named `live-server`. Verify that it is available in the shell with `live-server --version`.
+Install Rust and Cargo, then install the MCP-enabled CLI from the feature branch:
+
+```sh
+cargo install --git https://github.com/bahruzmammad/zedlive-server --branch live-server-mcp-extension --force
+```
+
+The binary is named `live-server`. Verify `live-server --version` reports `0.0.1-alpha`. If another program named `live-server` shadows it, put `$HOME/.cargo/bin` first on PATH; in Fish, run `fish_add_path --prepend $HOME/.cargo/bin`. Launch Zed from the same shell so it inherits PATH. Once the feature branch is merged, the branch option can be omitted.
 
 If Zed reports that `live-server` cannot be found, install it with Cargo as above, make sure Cargo's binary directory is on the environment used to launch Zed, and restart Zed. The project does not hard-code a machine-specific binary path or download/install a native binary through an extension.
 
