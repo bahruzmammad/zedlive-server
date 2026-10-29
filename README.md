@@ -18,6 +18,12 @@ A local static web server and live-reload tool for frontend projects in **Zed**.
 
 This serves files directly. It does not compile TypeScript or JSX, run npm scripts, or replace Vite, webpack, or another framework development server.
 
+## Quick start in Zed (no AI required)
+
+Install the CLI once, then add the five tasks in [`.zed/tasks.json`](.zed/tasks.json) to Zed's global tasks using **zed: open tasks**. Open any frontend project and run **task: spawn → Live Server: Start**. It serves the project folder, opens the browser, and watches saved HTML/CSS/JavaScript changes. CSS updates live; HTML and JavaScript changes reload the page. Zed's autosave is optional; without it, save files normally to trigger updates.
+
+The exact setup, optional shortcuts, and autosave setting are in [Zed setup](docs/zed-setup.md). This task workflow works without the Agent Panel or AI. The five task definitions in `.zed/tasks.json` are the source of truth for future changes.
+
 ## Install the CLI
 
 Install Rust and Cargo from <https://rustup.rs>. The MCP extension automatically installs the native CLI on first start. To use the CLI directly or the Zed task templates, install it manually:

@@ -22,21 +22,35 @@ For safety, the MCP server only stops a server process that it started in its cu
 
 The automatic bootstrap checks for this project's MCP-enabled CLI using its help output, installing it only if it is missing or is a different executable. Cargo's installer output is kept off MCP standard output.
 
-## Use tasks in every Zed project
+## Recommended: use tasks without AI
 
-For the tasks to appear in every frontend project, open Zed's **zed: open tasks** action and copy the five **Live Server** task entries from this repository's `.zed/tasks.json` into your global task configuration. Alternatively, copy them into a web project's `.zed/tasks.json` to keep them project-local. Open the project as a Zed worktree, then use **task: spawn** to select:
+You do not need the Agent Panel or AI for this workflow. Install the CLI once, then make the tasks available in every project:
 
-- **Live Server: Start** — runs from `ZED_WORKTREE_ROOT`, reads that root's `live-server.toml` if present, and stays attached to a visible task terminal. The server opens the configured browser by default.
-- **Live Server: Stop** — asks the CLI to stop the server recorded for the worktree.
-- **Live Server: Restart** — restarts that worktree's server using the current configuration.
-- **Live Server: Status** — prints the process state, URL, and root.
-- **Live Server: Open Browser** — opens the URL recorded for the running server.
+1. Install Rust/Cargo from <https://rustup.rs>, then install this CLI:
+   ```sh
+   cargo install --git https://github.com/bahruzmammad/zedlive-server --branch live-server-mcp-extension --locked --force --bin live-server
+   ```
+   This is a one-time machine setup. Restart Zed after installation if it cannot find `live-server`.
+2. In Zed, run **zed: open tasks**. Copy the five **Live Server** entries from this repository's [`.zed/tasks.json`](../.zed/tasks.json) into the global tasks file. Alternatively, copy them to a project's `.zed/tasks.json` to keep them project-local.
+3. Open a frontend project folder in Zed. Run **task: spawn**, choose **Live Server: Start**, and start working. The task serves the active worktree folder and opens the configured browser.
 
-Arguments and the task working directory use Zed's `ZED_WORKTREE_ROOT` variable. The root is passed as a distinct argument rather than interpolated into a shell command, so spaces in project paths are preserved. Project configuration is discovered at that root; a command-line root takes precedence over a TOML `root`.
+The task file provides five actions: **Start** (also opens the browser), **Stop**, **Restart**, **Status**, and **Open Browser**. They operate on the active Zed worktree. Arguments and working directory use `ZED_WORKTREE_ROOT`; the root is passed as a distinct argument so paths containing spaces work. A `live-server.toml` in that project root is used when present.
 
-The task templates require `live-server` to be on Zed's task environment `PATH`; unlike the MCP extension, tasks do not bootstrap the CLI. Install it with Cargo and restart Zed if a task cannot find it. A port conflict or invalid project configuration is reported by the CLI in the same terminal.
+Tasks require `live-server` on Zed's task `PATH`. The MCP extension has its own first-run CLI bootstrap, but tasks do not invoke it; for this AI-free workflow, use the one-time Cargo install above and ensure Cargo's `bin` directory is on Zed's task `PATH`. A port conflict or invalid project configuration is reported in the task terminal.
 
-This is a static development server for HTML, CSS, JavaScript, and assets. It serves files directly and reloads the browser after edits; it does not compile JSX/TypeScript, run npm scripts, or replace a framework dev server such as Vite.
+Once started, the server watches saved HTML, CSS, JavaScript, and asset changes: CSS is updated live, while HTML/JavaScript changes reload the browser. Zed autosave is optional. To save edits automatically after a short pause, add this to Zed's user-level `settings.json`:
+
+```json
+{
+  "autosave": {
+    "after_delay": {
+      "milliseconds": 1000
+    }
+  }
+}
+```
+
+This is a static development server: it serves files directly, does not compile JSX/TypeScript or run npm scripts, and does not replace a framework server such as Vite.
 
 ## Optional keybindings
 
@@ -59,8 +73,8 @@ Zed keybindings are user-level settings. Add bindings like these to your `keymap
 ]
 ```
 
-Tasks remain available through Zed's task spawn/rerun actions even without custom keybindings. For links and current behavior, see [Zed Tasks](https://zed.dev/docs/tasks) and [Zed Key Bindings](https://zed.dev/docs/key-bindings).
+Tasks remain available through Zed's task spawn/rerun actions even without custom keybindings. Shortcuts are optional and user-level; change them if they conflict with your keymap. For links and current behavior, see [Zed Tasks](https://zed.dev/docs/tasks) and [Zed Key Bindings](https://zed.dev/docs/key-bindings).
 
 ## Integration limits
 
-The public extension API supports extension features such as languages, debuggers, themes, icon themes, snippets, and MCP servers. It does not provide the general project UI hooks this server would need for custom command-palette entries, status-bar UI, context menus, settings UI, or workspace open/close lifecycle management. Zed tasks are the supported alternative; task terminal output is the server's visible state and diagnostic surface.
+The public extension API does not provide the general project UI hooks this server would need for custom Command Palette entries, status-bar UI, context menus, extension-provided keybindings, or automatic start when an HTML file opens. Therefore, the supported no-AI workflow is to run the Zed task once per project session; it cannot truthfully promise a VS Code-style Go Live button or automatic startup on file open. Track possible improvements against [issue #4](https://github.com/bahruzmammad/zedlive-server/issues/4). If Zed adds supported APIs for these behaviors, revisit the task and setup docs together.

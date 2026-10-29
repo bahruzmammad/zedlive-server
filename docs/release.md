@@ -14,6 +14,8 @@ The Marketplace submission is open as [`zed-industries/extensions#8174`](https:/
 
 See [Zed setup](zed-setup.md) for installing the CLI and using the extension or tasks.
 
+The AI-free onboarding and Zed task workflow follow-up is tracked in [issue #4](https://github.com/bahruzmammad/zedlive-server/issues/4). Keep `.zed/tasks.json` as the source of truth for the five task actions, and update it alongside the setup docs if the workflow changes.
+
 ## v1.0.0 release gates
 
 Do not tag or announce `v1.0.0` until all of these are true:
