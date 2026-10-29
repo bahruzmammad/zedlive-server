@@ -34,7 +34,7 @@ For local development, clone this repository and run `cargo install --path .`. U
 
 The Zed extension is in [`zed-extension/`](zed-extension/). It runs `live-server mcp`; therefore install the CLI first and make sure Cargo's binary directory is on the environment used to launch Zed. The extension exposes `live_server_start`, `live_server_stop`, `live_server_restart`, `live_server_status`, and `live_server_open_browser` to the Agent Panel. Tools default to the active Zed workspace and reject project paths outside that workspace.
 
-The extension is not yet published to the Zed registry. For local development, install it as a dev extension by selecting `zed-extension/` in Zed's **Install Dev Extension** flow. The extension requires manual testing in Zed before registry submission.
+The Zed registry already lists a [`live-server` extension](https://zed.dev/extensions/live-server). This MCP extension is a separate Agent Panel tool interface; registry maintainers must assess whether its functionality is sufficiently distinct before submission. It is not yet published. For local development, install it as a dev extension by selecting `zed-extension/` in Zed's **Install Dev Extension** flow. Manual Zed testing is required before any registry submission.
 
 **MCP lifecycle note:** the MCP server only stops processes it started in its current session. This avoids terminating an unrelated process through stale project state. It stops its owned servers when the MCP session shuts down normally. Servers started with a Zed task or another CLI session can still be controlled using the CLI/tasks.
 

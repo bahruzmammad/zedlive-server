@@ -19,6 +19,7 @@ The project is alpha. Do not tag `v1.0.0` or submit the Zed extension until the 
 - [ ] Manually install `zed-extension/` in Zed and verify server setup, tool discovery, start/status/open/restart/stop, and browser reload.
 - [ ] Confirm extension user experience and installation on Windows and Linux; test macOS if claiming support there.
 - [ ] Address Zed's MCP extension deprecation notice by publishing the MCP server through the official MCP Registry or confirming the current accepted migration path.
+- [ ] Resolve overlap with the existing [`live-server` extension](https://zed.dev/extensions/live-server) with its maintainers; contribute upstream if they consider the feature overlapping.
 - [ ] After manual verification, fork `zed-industries/extensions`, add exactly this extension as a submodule using HTTPS, add the matching `extensions.toml` version/path, sort, and submit one PR.
 
 ## Required before v1.0.0
