@@ -65,7 +65,8 @@ Development conventions and contribution validation are in [AGENTS.md](AGENTS.md
 - [Security notes](docs/security.md)
 - [Supported platforms](docs/platforms.md)
 - [Changelog](CHANGELOG.md)
+- [Release readiness and process](docs/release.md)
 
 ## Release status
 
-`Cargo.toml` declares MIT, but the repository currently has no `LICENSE` file; the license text/attribution still needs maintainer confirmation. See [`TODO.md`](TODO.md) for priorities and remaining acceptance criteria. This is alpha software, not a v1.0.0 release candidate. CLI process ownership, atomic duplicate-instance protection, manual Zed verification, and confirmed Windows/macOS CI remain release blockers.
+The repository is MIT-licensed; see [`LICENSE`](LICENSE). See [`docs/release.md`](docs/release.md) and [`TODO.md`](TODO.md) for v1.0.0 readiness. This is alpha software, not a v1.0.0 release candidate. CLI process ownership, atomic duplicate-instance protection, manual Zed verification, and confirmed Windows/macOS CI remain release blockers.

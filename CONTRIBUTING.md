@@ -25,4 +25,4 @@ Include operating system, Rust version, CLI version, sanitized TOML, exact outpu
 
 ## Releases
 
-Do not create releases, publish to an extension/package registry, or upload binaries without maintainer authorization. The current manifest is metadata only, not a registry-ready Zed extension. Do not change the declared MIT license or create a license file without maintainer confirmation.
+Follow [`docs/release.md`](docs/release.md) and clear all listed release gates before creating a version tag. Do not publish this native CLI as a Zed extension; it does not provide a supported extension feature. The MIT license text and copyright holder are recorded in `LICENSE`.

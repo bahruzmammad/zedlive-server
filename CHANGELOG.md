@@ -12,5 +12,7 @@
 - Removed the misleading extension manifest so Zed does not attempt to compile the native CLI as a dev extension.
 - Made watcher initialization failures abort startup instead of silently disabling reload; added checks for watcher events on HTML, CSS, and JavaScript edits.
 - Kept the Zed task list focused on server controls and documented global tasks for use across frontend projects.
+- Added release readiness notes covering Zed's supported workflows, extension marketplace limits, and v1.0.0 gates.
+- Added the maintainer-confirmed MIT license and derived CLI version/help text from Cargo package metadata.
 
 This is not a v1.0.0 release. CLI process ownership, atomic duplicate-instance protection, watcher failure handling, broad reload coverage, and cross-platform validation remain open.

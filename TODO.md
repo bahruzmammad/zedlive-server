@@ -23,7 +23,7 @@ The initial audit environment lacked Cargo. Rust stable was subsequently install
 - `src/watcher`, `src/reload`, `src/websocket`, and `web/live-reload.js` implement filesystem events, reload messages, WebSocket clients, CSS stylesheet replacement, and reconnect attempts.
 - `src/control` stores per-root state under `.live-server/` and implements status/open/stop operations. `tests/integration.rs` currently covers health, HTML/client injection, and a missing-file response; the fixtures include static HTML, CSS, JS, JSON, SVG, and a proxy upstream.
 - The unsupported root `extension.toml` was removed so Zed does not try to compile the native CLI as a WebAssembly dev extension. `.zed/tasks.json` and setup/configuration/troubleshooting/security/platform docs are present.
-- Cargo/source remain at `0.0.1-alpha`; do not change to `1.0.0` until release criteria pass. `Cargo.toml` declares MIT, but there is no license file; do not alter licensing without approval.
+- Cargo/source remain at `0.0.1-alpha`; do not change to `1.0.0` until release criteria pass. The maintainer confirmed MIT and the matching `LICENSE` file is checked in.
 
 ### Zed API findings
 
@@ -69,7 +69,7 @@ Sources checked: [Zed extension development](https://zed.dev/docs/extensions/dev
 
 - [ ] Review origin validation for WebSockets, LAN exposure, process state/PID safety, path traversal/symlinks, HTML injection, resource cleanup, and error propagation.
 - [x] Add Zed installation/usage, configuration reference, troubleshooting, security notes, and supported-platform guidance; Linux is the only validated platform so far.
-- [x] Align Cargo, source, and Zed metadata versions at `0.0.1-alpha` and replace placeholder repository metadata with the configured remote. Do not invent/change the existing MIT license.
+- [x] Align Cargo and source versions at `0.0.1-alpha` using Cargo package metadata and add the maintainer-confirmed MIT license text.
 - [x] Add an unreleased changelog and reproducible build/install/uninstall instructions; no external publication without authorization.
 
 ### Phase 6 — Release gate
