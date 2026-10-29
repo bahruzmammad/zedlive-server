@@ -6,6 +6,7 @@ pub mod config;
 pub mod control;
 pub mod http;
 pub mod https;
+pub mod mcp;
 pub mod proxy;
 pub mod reload;
 pub mod security;

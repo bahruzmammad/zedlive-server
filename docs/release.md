@@ -2,29 +2,31 @@
 
 ## What this project can provide in Zed
 
-This project is a native Rust static web server and live-reload client. On Linux, Windows, and macOS, the intended workflow is to install the `live-server` CLI, add its task templates to Zed's global tasks once, and use **task: spawn** to start, stop, restart, inspect, or open the site. Optional keybindings can spawn those tasks.
+This project is a native Rust static web server and live-reload client. The Zed MCP extension in `zed-extension/` exposes server tools in the Agent Panel. The CLI and `.zed/tasks.json` also provide start, stop, restart, status, and browser controls through Zed's supported task-spawn workflow.
 
 It serves HTML, CSS, JavaScript, and static assets directly. Editing a watched HTML, CSS, or JavaScript file sends a reload event to the browser. It does not compile TypeScript, JSX, or framework components, and does not replace Vite, webpack, or another framework development server.
 
-## What the Zed extension marketplace cannot provide for this project
+## Zed extension and marketplace status
 
-Zed extensions must provide a supported extension feature such as language support, a theme, snippets, a debugger, or an MCP server. The public extension API does not expose general project lifecycle commands, custom Command Palette entries, toolbar/status-bar controls, or project task registration. A native CLI repository without an extension feature is not a valid marketplace extension; adding a metadata-only `extension.toml` makes Zed try to compile it as a WebAssembly extension and is not a fix.
+The repository now includes a real MCP extension at `zed-extension/`. On first start, it uses Cargo to install the native CLI if needed, then launches its MCP process; it exposes seven Agent Panel tools for server lifecycle controls, project configuration diagnostics, and same-server route preview. It does not register custom project commands in the Command Palette, toolbar/status-bar controls, or task registration.
 
-An MCP extension could expose tools in the Agent Panel, but it would not provide the requested Live Server Start/Stop Command Palette workflow and is planned for deprecation in favor of the MCP Registry. It is intentionally not part of this product.
+The Marketplace submission is open as [`zed-industries/extensions#8174`](https://github.com/zed-industries/extensions/pull/8174). Registry packaging, sorting, Danger, and CLA checks pass; maintainer review and merge are pending. The repository already contains a [`live-server` extension](https://zed.dev/extensions/live-server), so maintainers must assess whether this Agent Panel interface and its project-diagnostic/route-preview tools are distinct enough to merit another listing. End-to-end lifecycle and browser-reload testing in Zed is still outstanding. Zed plans to deprecate MCP server extensions in favor of the official MCP Registry, so distribution may need migration. Do not describe this integration as Command Palette task controls or as already published.
 
-The supported Zed workflow and limitations are documented in [Zed setup](zed-setup.md). Do not submit this CLI to the Zed extension registry as though it were a Zed extension.
+See [Zed setup](zed-setup.md) for installing the CLI and using the extension or tasks.
+
+The AI-free onboarding and Zed task workflow follow-up is tracked in [issue #4](https://github.com/bahruzmammad/zedlive-server/issues/4). Keep `.zed/tasks.json` as the source of truth for the ten task entries, and update it alongside the setup docs if the workflow changes. A Marketplace extension install currently does not install the global task templates or eliminate the Rust/Cargo requirement; do not claim extension-only, no-Rust setup until a supported distribution path is implemented and verified.
 
 ## v1.0.0 release gates
 
 Do not tag or announce `v1.0.0` until all of these are true:
 
-- The GitHub Actions workflow passes on Linux, Windows, and macOS.
+- The GitHub Actions workflow passes on Linux, Windows, and macOS, including the Zed extension WASM build.
 - The server lifecycle cannot stop an unrelated process through stale or forged `.live-server` state, and simultaneous starts for one project are handled safely.
-- A manual Zed task workflow and browser reload are verified on Linux and Windows.
+- The extension is manually installed and tested in Zed, including its MCP tools and browser reload.
 - The release checklist in `TODO.md` has no unresolved P0/P1 items.
 - `Cargo.toml`'s MIT declaration matches the checked-in `LICENSE`.
 
-The current branch is a workflow/reliability update, not a v1 release. CI results and manual editor checks must be reviewed before promoting it.
+The project remains alpha. The latest pushed extension build and Linux/macOS/Windows CI pass; manually test the extension in Zed and wait for Marketplace maintainer review before claiming publication or promoting a release.
 
 ## Release procedure after the gates pass
 
@@ -34,4 +36,4 @@ The current branch is a workflow/reliability update, not a v1 release. CI result
 4. Confirm the Linux, Windows, and macOS CI jobs are green and review the exact commit diff.
 5. Commit the release changes, create the `v1.0.0` tag, and push the commit and tag only with maintainer authorization.
 
-This procedure releases the CLI and task-based Zed workflow. It does not submit an extension to the Zed marketplace; that would require a separate supported extension feature and a separate review.
+This procedure releases the CLI and Zed integrations. The MCP extension has a separate Marketplace PR; publication depends on maintainer review/merge, manual Zed verification, and addressing Zed's MCP Registry migration guidance.

@@ -22,6 +22,7 @@ async fn main() {
             println!("{}", live_server::VERSION);
             Ok(())
         }
+        CliCommand::Mcp => live_server::mcp::run_stdio(),
         CliCommand::Start(options) => server::run(*options).await,
         CliCommand::Restart(options) => server::restart(*options).await,
         CliCommand::Stop(options) => control::stop(&options.root).map(|message| {

@@ -13,6 +13,65 @@
     "save": "all"
   },
   {
+    "label": "Live Server: Start Current Folder",
+    "command": "live-server",
+    "args": ["start", "$ZED_DIRNAME"],
+    "cwd": "$ZED_DIRNAME",
+    "use_new_terminal": true,
+    "allow_concurrent_runs": false,
+    "reveal": "always",
+    "hide": "never",
+    "show_summary": true,
+    "show_command": true,
+    "save": "all"
+  },
+  {
+    "label": "Live Server: Stop Current Folder",
+    "command": "live-server",
+    "args": ["stop", "$ZED_DIRNAME"],
+    "cwd": "$ZED_DIRNAME",
+    "use_new_terminal": true,
+    "reveal": "always",
+    "hide": "never",
+    "show_summary": true,
+    "show_command": true
+  },
+  {
+    "label": "Live Server: Restart Current Folder",
+    "command": "live-server",
+    "args": ["restart", "$ZED_DIRNAME"],
+    "cwd": "$ZED_DIRNAME",
+    "use_new_terminal": true,
+    "allow_concurrent_runs": false,
+    "reveal": "always",
+    "hide": "never",
+    "show_summary": true,
+    "show_command": true,
+    "save": "all"
+  },
+  {
+    "label": "Live Server: Status Current Folder",
+    "command": "live-server",
+    "args": ["status", "$ZED_DIRNAME"],
+    "cwd": "$ZED_DIRNAME",
+    "use_new_terminal": true,
+    "reveal": "always",
+    "hide": "never",
+    "show_summary": true,
+    "show_command": true
+  },
+  {
+    "label": "Live Server: Open Current Folder in Browser",
+    "command": "live-server",
+    "args": ["open", "$ZED_DIRNAME"],
+    "cwd": "$ZED_DIRNAME",
+    "use_new_terminal": true,
+    "reveal": "always",
+    "hide": "never",
+    "show_summary": true,
+    "show_command": true
+  },
+  {
     "label": "Live Server: Stop",
     "command": "live-server",
     "args": ["stop", "$ZED_WORKTREE_ROOT"],

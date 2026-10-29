@@ -22,7 +22,7 @@ Check the CLI's printed error and the [configuration reference](configuration.md
 
 ## No Zed Live Server buttons or status widget
 
-This project uses Zed's supported task templates. The public extension API does not provide custom command-palette commands, status-bar widgets, or file-tree context actions for this use case. Use **task: spawn** and the project tasks instead.
+This project uses Zed's supported task templates. The public extension API does not provide custom command-palette commands, status-bar widgets, or file-tree context actions for this use case. Use **task: spawn** and the project tasks instead. **Live Server: Start Current Folder** serves the directory of the active file; **Live Server: Start** serves the project root.
 
 ## Report a reproducible issue
 

@@ -1,6 +1,8 @@
 use crate::browser;
 use crate::config::Browser;
 use serde::{Deserialize, Serialize};
+#[cfg(windows)]
+use std::process::Stdio;
 use std::{
     fs,
     path::{Path, PathBuf},
@@ -120,14 +122,18 @@ pub fn stop(root: &Path) -> Result<String, String> {
 fn terminate(pid: u32) -> Result<(), String> {
     #[cfg(windows)]
     {
-        let status = Command::new("taskkill")
+        let output = Command::new("taskkill")
             .args(["/PID", &pid.to_string(), "/T", "/F"])
-            .status()
+            .stdout(Stdio::null())
+            .output()
             .map_err(|e| e.to_string())?;
-        if status.success() {
+        if output.status.success() {
             Ok(())
         } else {
-            Err(format!("taskkill failed for PID {pid}"))
+            Err(format!(
+                "taskkill failed for PID {pid}: {}",
+                String::from_utf8_lossy(&output.stderr).trim()
+            ))
         }
     }
     #[cfg(unix)]

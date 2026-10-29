@@ -7,6 +7,7 @@ use std::{net::IpAddr, path::PathBuf, str::FromStr};
 pub enum CliCommand {
     Help,
     Version,
+    Mcp,
     Start(Box<RunOptions>),
     Stop(ControlOptions),
     Restart(Box<RunOptions>),
@@ -197,6 +198,7 @@ impl Cli {
         }
 
         let (command, rest) = match args.first().map(String::as_str) {
+            Some("mcp") => ("mcp", &args[1..]),
             Some("start" | "run") => ("start", &args[1..]),
             Some("stop") => ("stop", &args[1..]),
             Some("restart") => ("restart", &args[1..]),
@@ -206,6 +208,8 @@ impl Cli {
         };
 
         match command {
+            "mcp" if rest.is_empty() => Ok(CliCommand::Mcp),
+            "mcp" => Err(format!("unexpected argument: {}", rest[0])),
             "start" => Self::parse_run(rest).map(|options| CliCommand::Start(Box::new(options))),
             "stop" => Self::parse_control(rest).map(CliCommand::Stop),
             "restart" => {
@@ -421,6 +425,7 @@ USAGE:
   live-server restart [ROOT] [OPTIONS]
   live-server open [ROOT] [--browser chrome|edge|firefox]
   live-server status [ROOT]
+  live-server mcp
   live-server --help
   live-server --version
 
@@ -430,6 +435,7 @@ LIFECYCLE:
   restart                      Stop and start server again
   open                         Open current server URL
   status                       Show PID, URL and state
+  mcp                          Run the Zed Live Server MCP server over stdio
 
 SERVER:
   -p, --port <PORT>            Fixed port; 0 selects an OS-assigned port
@@ -595,6 +601,12 @@ mod tests {
             Cli::parse(["--version"]).unwrap(),
             CliCommand::Version
         ));
+    }
+
+    #[test]
+    fn mcp_command_is_parsed() {
+        assert!(matches!(Cli::parse(["mcp"]).unwrap(), CliCommand::Mcp));
+        assert!(Cli::parse(["mcp", "unexpected"]).is_err());
     }
 
     #[test]

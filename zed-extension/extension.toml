@@ -1,0 +1,10 @@
+id = "mcp-server-live-server"
+name = "Live Server"
+description = "Start and control the Live Server for frontend projects from the Zed Agent Panel"
+version = "0.1.0"
+schema_version = 1
+authors = ["Bahruz Mammadov"]
+repository = "https://github.com/bahruzmammad/zedlive-server"
+
+[context_servers.live-server]
+name = "Live Server"
