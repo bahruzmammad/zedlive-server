@@ -8,8 +8,11 @@ use live_server::{
 use std::{
     fs,
     path::{Path, PathBuf},
-    process::{Child, Command, Stdio},
     sync::atomic::{AtomicU64, Ordering},
+};
+#[cfg(unix)]
+use std::{
+    process::{Child, Command, Stdio},
     thread,
     time::{Duration, Instant},
 };
@@ -65,8 +68,10 @@ impl Drop for TestDirectory {
     }
 }
 
+#[cfg(unix)]
 struct ChildGuard(Child);
 
+#[cfg(unix)]
 impl Drop for ChildGuard {
     fn drop(&mut self) {
         if self.0.try_wait().ok().flatten().is_none() {
