@@ -8,9 +8,9 @@ It serves HTML, CSS, JavaScript, and static assets directly. Editing a watched H
 
 ## Zed extension and marketplace status
 
-The repository now includes a real MCP extension at `zed-extension/`. It starts the separately installed native `live-server mcp` process and exposes Live Server start, stop, restart, status, and browser tools in the Agent Panel. It does not register custom project commands in the Command Palette, toolbar/status-bar controls, or task registration.
+The repository now includes a real MCP extension at `zed-extension/`. It starts the separately installed native `live-server mcp` process and exposes seven Agent Panel tools: server lifecycle controls, project configuration diagnostics, and same-server route preview. It does not register custom project commands in the Command Palette, toolbar/status-bar controls, or task registration.
 
-The extension has not yet been manually tested in Zed or submitted to the registry. The registry already contains a [`live-server` extension](https://zed.dev/extensions/live-server), so maintainers must determine whether this Agent Panel MCP interface is distinct enough to merit another listing; consider contributing to the existing project instead. Zed plans to deprecate MCP server extensions in favor of the official MCP Registry, and the publishing prerequisites ask MCP server authors to publish there as well. Address the overlap, migration/distribution, and manual-testing requirements before submitting. Do not describe this integration as Command Palette task controls.
+The extension has not yet been manually tested in Zed or submitted to the registry. The registry already contains a [`live-server` extension](https://zed.dev/extensions/live-server), so maintainers must determine whether this Agent Panel interface and its project-diagnostic/route-preview tools are distinct enough to merit another listing; consider contributing to the existing project instead. Zed plans to deprecate MCP server extensions in favor of the official MCP Registry, and the publishing prerequisites ask MCP server authors to publish there as well. Address the overlap, migration/distribution, and manual-testing requirements before submitting. Do not describe this integration as Command Palette task controls.
 
 See [Zed setup](zed-setup.md) for installing the CLI and using the extension or tasks.
 

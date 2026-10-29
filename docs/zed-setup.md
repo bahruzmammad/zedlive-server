@@ -12,7 +12,7 @@ To remove the installed CLI, run `cargo uninstall live-server`. This removes the
 
 ## Use MCP tools in the Agent Panel
 
-Install the CLI and ensure `live-server` is on the environment used to launch Zed. Then install the published **Live Server** extension when available, or install `zed-extension/` as a dev extension for local testing. The extension starts `live-server mcp` and exposes tools for start, stop, restart, status, and opening the browser. Tools default to the active Zed worktree; an optional project path is confined to that workspace.
+Install the CLI and ensure `live-server` is on the environment used to launch Zed. Then install the published **Live Server** extension when available, or install `zed-extension/` as a dev extension for local testing. The extension starts `live-server mcp` and exposes seven Agent Panel tools: start, stop, restart, status, open the project root, open a same-server route, and inspect effective project configuration. Project inspection validates `live-server.toml` and reports the bind address, index-file presence, and reload/watch/SPA settings without starting the server or editing files. Route preview is intended for nested HTML pages and SPA routes; external hosts and traversal segments are rejected. Tools default to the active Zed worktree; an optional project path is confined to that workspace.
 
 For safety, the MCP server only stops a server process that it started in its current session. If the MCP session restarts, use the CLI or task workflow to control servers started by the previous session.
 

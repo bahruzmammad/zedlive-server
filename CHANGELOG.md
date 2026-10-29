@@ -14,7 +14,7 @@
 - Kept the Zed task list focused on server controls and documented global tasks for use across frontend projects.
 - Added release readiness notes covering Zed's supported workflows, extension marketplace limits, and v1.0.0 gates.
 - Added the maintainer-confirmed MIT license and derived CLI version/help text from Cargo package metadata.
-- Added an MCP stdio server with Agent Panel tools for starting, stopping, restarting, checking status, and opening the browser for a project.
+- Added an MCP stdio server with seven Agent Panel tools for server lifecycle, project configuration diagnostics, and same-server route preview.
 - Added a Zed MCP extension that launches the separately installed CLI, with installation instructions and session-owned stop protection.
 
 This is not a v1.0.0 release. The MCP extension still needs manual Zed verification and registry submission; CLI process ownership and atomic duplicate-instance protection also remain open. The MCP extension and CLI require fresh cross-platform CI verification.

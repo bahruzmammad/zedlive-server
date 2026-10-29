@@ -1,4 +1,8 @@
-use crate::control::{self, ServerState};
+use crate::{
+    browser,
+    cli::RunOptions,
+    control::{self, ServerState},
+};
 use serde_json::{Value, json};
 use std::{
     collections::HashMap,
@@ -88,6 +92,8 @@ impl McpServer {
                 | "live_server_restart"
                 | "live_server_status"
                 | "live_server_open_browser"
+                | "live_server_open_page"
+                | "live_server_inspect_project"
         ) {
             return Err(format!("unknown Live Server tool: {name}"));
         }
@@ -107,10 +113,30 @@ impl McpServer {
                 self.start(&root)
             }
             "live_server_status" => status(&root),
+            "live_server_inspect_project" => inspect_project(&root),
             "live_server_open_browser" => {
                 control::open(&root, None)?;
                 let state = control::read_state(&root)?;
                 Ok(format!("Opened {}", state.url))
+            }
+            "live_server_open_page" => {
+                let state = control::read_state(&root)?;
+                if !control::process_exists(state.pid) {
+                    return Err("Live Server process is not running".into());
+                }
+                let path = match arguments.get("path") {
+                    None => "/",
+                    Some(Value::String(path)) => path,
+                    Some(_) => return Err("the path argument must be a route string".into()),
+                };
+                let url = page_url(&state.url, path)?;
+                let config = RunOptions {
+                    root: Some(root.clone()),
+                    ..RunOptions::default()
+                }
+                .into_config()?;
+                browser::open_url(&config.browser, config.browser_command.as_deref(), &url)?;
+                Ok(format!("Opened {url}"))
             }
             _ => unreachable!("tool name was checked above"),
         }
@@ -308,47 +334,131 @@ fn status(root: &Path) -> Result<String, String> {
     }
 }
 
-fn tools() -> Vec<Value> {
-    let input_schema = json!({
-        "type": "object",
-        "properties": {
-            "root": {
-                "type": "string",
-                "description": "Optional project directory inside the active Zed workspace; defaults to the workspace root."
-            }
-        },
-        "required": ["root"],
-        "additionalProperties": false
-    });
+fn inspect_project(root: &Path) -> Result<String, String> {
+    let options = RunOptions {
+        root: Some(root.to_path_buf()),
+        ..RunOptions::default()
+    };
+    let config = options.into_config()?;
+    config.validate().map_err(|error| error.to_string())?;
+    let configured_index = root.join(&config.index_file);
+    let index_status = if configured_index.is_file() {
+        format!("present ({})", config.index_file)
+    } else {
+        format!("missing ({})", config.index_file)
+    };
+    let config_file = root.join("live-server.toml");
+    let config_status = if config_file.is_file() {
+        "loaded live-server.toml"
+    } else {
+        "using defaults (no live-server.toml)"
+    };
 
+    Ok(format!(
+        "Live Server project inspection\n\
+         Root: {}\n\
+         Configuration: {config_status}\n\
+         Bind address: {}:{}\n\
+         Index file: {index_status}\n\
+         Directory listing: {}\n\
+         File watching: {}\n\
+         Browser reload: {} (CSS hot swap: {})\n\
+         SPA fallback: {}\n\
+         Browser on start: {}",
+        root.display(),
+        config.host,
+        config.port,
+        enabled(config.directory_listing),
+        enabled(config.watch.enabled),
+        enabled(config.reload.enabled && config.reload.inject_client),
+        enabled(config.reload.enabled && !config.reload.full_reload),
+        enabled(config.spa.enabled),
+        enabled(config.open_browser),
+    ))
+}
+
+fn enabled(value: bool) -> &'static str {
+    if value { "enabled" } else { "disabled" }
+}
+
+fn page_url(base_url: &str, path: &str) -> Result<String, String> {
+    let decoded_path = percent_encoding::percent_decode_str(path)
+        .decode_utf8()
+        .map_err(|_| "page path must be valid UTF-8".to_owned())?;
+    let path_without_query = decoded_path.split(['?', '#']).next().unwrap_or_default();
+    if path.starts_with("//")
+        || decoded_path.starts_with("//")
+        || path.contains("://")
+        || decoded_path.contains('\\')
+        || decoded_path.chars().any(char::is_control)
+        || path_without_query
+            .split('/')
+            .any(|segment| matches!(segment, "." | ".."))
+    {
+        return Err("page path must be a same-server route without traversal segments".into());
+    }
+
+    Ok(format!("{}{}", base_url, path.trim_start_matches('/')))
+}
+
+fn tools() -> Vec<Value> {
     [
         (
             "live_server_start",
-            "Start the static Live Server for a project. The browser is not opened automatically; use live_server_open_browser when desired.",
+            "Start the static Live Server using the project's live-server.toml or safe defaults. Serves files directly, watches frontend assets, and injects the reload client into HTML. Does not run npm scripts or compile frameworks. The browser is not opened automatically by this tool; call live_server_open_browser afterward if wanted.",
         ),
         (
             "live_server_stop",
-            "Stop a server started by this MCP session. For safety, this tool will not stop a process started outside this session.",
+            "Stop the server only when this MCP session started and still owns its child process. It verifies the recorded PID before requesting shutdown and refuses to stop servers started by another CLI, task, or MCP session.",
         ),
         (
             "live_server_restart",
-            "Restart a server started by this MCP session using the current project configuration.",
+            "Restart a server owned by this MCP session, applying the project's current live-server.toml. If another session owns the running server, this tool refuses to stop it; use that session or the CLI instead.",
         ),
         (
             "live_server_status",
-            "Check whether a Live Server is running for a project.",
+            "Report whether this project's Live Server is running, including its URL and PID. Stale state is reported without deleting files or signaling a process.",
         ),
         (
             "live_server_open_browser",
-            "Open the browser at the URL of the running Live Server for a project.",
+            "Open the root URL of this project's running Live Server in the system browser. Fails if no live process is running.",
+        ),
+        (
+            "live_server_open_page",
+            "Open a specific same-server route in the system browser, useful for previewing a nested HTML page or SPA route. The route cannot specify another host or include dot-segment traversal. Requires a running server.",
+        ),
+        (
+            "live_server_inspect_project",
+            "Validate the project's live-server.toml and summarize effective settings before starting: bind address, index file presence, directory listing, watch/reload, SPA fallback, and browser behavior. This is a read-only diagnostic; it does not start the server or modify project files.",
         ),
     ]
     .into_iter()
     .map(|(name, description)| {
+        let mut properties = serde_json::Map::new();
+        properties.insert(
+            "root".into(),
+            json!({
+                "type": "string",
+                "description": "Optional directory inside the active Zed worktree. Omit to use the worktree root."
+            }),
+        );
+        if name == "live_server_open_page" {
+            properties.insert(
+                "path".into(),
+                json!({
+                    "type": "string",
+                    "description": "Optional same-server route such as /products/item.html or /docs/. Defaults to /."
+                }),
+            );
+        }
         json!({
             "name": name,
             "description": description,
-            "inputSchema": input_schema
+            "inputSchema": {
+                "type": "object",
+                "properties": properties,
+                "additionalProperties": false
+            }
         })
     })
     .collect()
@@ -394,8 +504,24 @@ mod tests {
         let listed = server
             .handle(json!({ "jsonrpc": "2.0", "id": 2, "method": "tools/list" }))
             .unwrap();
-        assert_eq!(listed["result"]["tools"].as_array().unwrap().len(), 5);
+        let tools = listed["result"]["tools"].as_array().unwrap();
+        assert_eq!(tools.len(), 7);
         assert_eq!(listed["result"]["tools"][0]["name"], "live_server_start");
+        assert!(
+            tools
+                .iter()
+                .any(|tool| tool["name"] == "live_server_inspect_project")
+        );
+        assert!(
+            tools
+                .iter()
+                .any(|tool| tool["name"] == "live_server_open_page")
+        );
+        assert!(
+            tools
+                .iter()
+                .all(|tool| !tool["description"].as_str().unwrap().is_empty())
+        );
     }
 
     #[test]
@@ -450,5 +576,42 @@ mod tests {
             workspace_root
         );
         assert!(resolve_root(&json!({ "root": ".." }), &workspace_root).is_err());
+    }
+
+    #[test]
+    fn page_routes_cannot_escape_the_server_or_open_external_hosts() {
+        let base = "http://127.0.0.1:5500/";
+        assert_eq!(
+            page_url(base, "/products/index.html").unwrap(),
+            "http://127.0.0.1:5500/products/index.html"
+        );
+        assert!(page_url(base, "//example.com").is_err());
+        assert!(page_url(base, "https://example.com").is_err());
+        assert!(page_url(base, "/../../secret.html").is_err());
+        assert!(page_url(base, "/%2e%2e/secret.html").is_err());
+    }
+
+    #[test]
+    fn project_inspection_reports_effective_settings_and_missing_index() {
+        static NEXT_ID: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+        let temp = std::env::temp_dir().join(format!(
+            "live-server-inspect-{}-{}",
+            std::process::id(),
+            NEXT_ID.fetch_add(1, std::sync::atomic::Ordering::Relaxed)
+        ));
+        std::fs::create_dir_all(&temp).unwrap();
+        std::fs::write(
+            temp.join("live-server.toml"),
+            "port = 5512\nreload = false\n",
+        )
+        .unwrap();
+
+        let report = inspect_project(&temp).unwrap();
+        assert!(report.contains("loaded live-server.toml"));
+        assert!(report.contains("127.0.0.1:5512"));
+        assert!(report.contains("missing (index.html)"));
+        assert!(report.contains("Browser reload: disabled"));
+
+        std::fs::remove_dir_all(temp).unwrap();
     }
 }
