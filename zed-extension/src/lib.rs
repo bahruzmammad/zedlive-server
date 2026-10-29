@@ -15,16 +15,23 @@ impl zed::Extension for LiveServerExtension {
         _project: &Project,
     ) -> Result<Command> {
         let output = zed::process::Command::new("live-server")
-            .arg("--version")
+            .arg("--help")
             .output()
             .map_err(|error| {
                 format!(
-                    "Live Server CLI is not available. Install it with `cargo install --git https://github.com/bahruzmammad/zedlive-server` and restart Zed. Details: {error}"
+                    "The MCP-enabled Live Server CLI is not available. Install it with `cargo install --git https://github.com/bahruzmammad/zedlive-server --branch live-server-mcp-extension --force`, ensure Cargo's bin directory is first on Zed's PATH, and restart Zed. Details: {error}"
                 )
             })?;
         if output.status != Some(0) {
             return Err(
-                "The installed Live Server CLI could not report its version. Reinstall it and restart Zed."
+                "The installed Live Server CLI could not show its help. Reinstall the MCP-enabled CLI and restart Zed."
+                    .into(),
+            );
+        }
+        let help = String::from_utf8_lossy(&output.stdout);
+        if !help.contains("Run the Zed Live Server MCP server over stdio") {
+            return Err(
+                "A different `live-server` executable is first on Zed's PATH. Install this project's MCP-enabled CLI and put Cargo's bin directory before other `live-server` commands."
                     .into(),
             );
         }
