@@ -20,9 +20,9 @@ This serves files directly. It does not compile TypeScript or JSX, run npm scrip
 
 ## Quick start in Zed (no AI required)
 
-Install the CLI once, then add the five tasks in [`.zed/tasks.json`](.zed/tasks.json) to Zed's global tasks using **zed: open tasks**. Open any frontend project and run **task: spawn → Live Server: Start**. It serves the project folder, opens the browser, and watches saved HTML/CSS/JavaScript changes. CSS updates live; HTML and JavaScript changes reload the page. Zed's autosave is optional; without it, save files normally to trigger updates.
+Install the CLI once, then add the ten tasks in [`.zed/tasks.json`](.zed/tasks.json) to Zed's global tasks using **zed: open tasks**. Open any frontend project and run **task: spawn → Live Server: Start**. It serves the project folder, opens the browser, and watches saved HTML/CSS/JavaScript changes. **Live Server: Start Current Folder** instead serves the directory containing the active file; use the matching Current Folder stop/restart/status/browser tasks for that server. CSS updates live; HTML and JavaScript changes reload the page. Zed's autosave is optional; without it, save files normally to trigger updates.
 
-The exact setup, optional shortcuts, and autosave setting are in [Zed setup](docs/zed-setup.md). This task workflow works without the Agent Panel or AI. The five task definitions in `.zed/tasks.json` are the source of truth for future changes.
+The exact setup, optional shortcuts, and autosave setting are in [Zed setup](docs/zed-setup.md). This task workflow works without the Agent Panel or AI. The task definitions in `.zed/tasks.json` are the source of truth for future changes. **Important:** the current CLI/task setup still requires Rust/Cargo once; installing the Marketplace extension alone does not provide an AI-free task command or remove that requirement. A prebuilt no-Rust installer remains a release blocker tracked in [issue #4](https://github.com/bahruzmammad/zedlive-server/issues/4).
 
 ## Install the CLI
 
@@ -55,7 +55,7 @@ Zed currently plans to deprecate MCP server extensions in favor of the official 
 
 ### Zed tasks
 
-Use the five task entries in [`.zed/tasks.json`](.zed/tasks.json) from **task: spawn**, or copy them to Zed's global tasks using **zed: open tasks**. The tasks support start, stop, restart, status, and opening the browser without the Agent Panel. See [Zed setup](docs/zed-setup.md).
+Use the ten task entries in [`.zed/tasks.json`](.zed/tasks.json) from **task: spawn**, or copy them to Zed's global tasks using **zed: open tasks**. The tasks support starting the project or current file's folder, stopping, restarting, checking status, and opening the browser without the Agent Panel. See [Zed setup](docs/zed-setup.md).
 
 ## CLI quick start
 

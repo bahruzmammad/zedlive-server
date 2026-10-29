@@ -4,7 +4,7 @@ The native server is a CLI. The `zed-extension/` directory contains a separate Z
 
 ## MCP extension setup
 
-Install Rust and Cargo from <https://rustup.rs>, then install the Zed extension from the registry after its PR is merged, or install `zed-extension/` as a dev extension for local testing. On its first start, the extension automatically installs this project's CLI from the feature branch into Cargo's install directory. It requires internet access, a writable Cargo install directory, and Zed's permission to run the process. Later starts reuse the CLI; an unrelated npm `live-server` on PATH is not used.
+Install Rust and Cargo from <https://rustup.rs>, then install the Zed extension from the registry after its PR is merged, or install `zed-extension/` as a dev extension for local testing. On its first start, the extension automatically builds and installs this project's CLI from the feature branch into Cargo's install directory. This still requires Rust/Cargo, internet access, a writable Cargo install directory, and Zed's permission to run the process. Later starts reuse the CLI; an unrelated npm `live-server` on PATH is not used. **The extension alone is not yet a Rust-free, AI-free installation:** prebuilt native binaries and a supported no-AI task integration are not available.
 
 If Zed reports Cargo is missing, install Rust and fully restart Zed. If automatic installation fails, check network access and write permissions for Cargo's install directory. You can install the CLI manually as a fallback:
 
@@ -24,17 +24,17 @@ The automatic bootstrap checks for this project's MCP-enabled CLI using its help
 
 ## Recommended: use tasks without AI
 
-You do not need the Agent Panel or AI for this workflow. Install the CLI once, then make the tasks available in every project:
+You do not need the Agent Panel or AI for this workflow. The current task workflow does require a one-time Rust/Cargo CLI install; Marketplace extension installation does not make the CLI available to tasks. To set it up:
 
 1. Install Rust/Cargo from <https://rustup.rs>, then install this CLI:
    ```sh
    cargo install --git https://github.com/bahruzmammad/zedlive-server --branch live-server-mcp-extension --locked --force --bin live-server
    ```
    This is a one-time machine setup. Restart Zed after installation if it cannot find `live-server`.
-2. In Zed, run **zed: open tasks**. Copy the five **Live Server** entries from this repository's [`.zed/tasks.json`](../.zed/tasks.json) into the global tasks file. Alternatively, copy them to a project's `.zed/tasks.json` to keep them project-local.
+2. In Zed, run **zed: open tasks**. Copy the ten **Live Server** entries from this repository's [`.zed/tasks.json`](../.zed/tasks.json) into the global tasks file. Alternatively, copy them to a project's `.zed/tasks.json` to keep them project-local.
 3. Open a frontend project folder in Zed. Run **task: spawn**, choose **Live Server: Start**, and start working. The task serves the active worktree folder and opens the configured browser.
 
-The task file provides five actions: **Start** (also opens the browser), **Stop**, **Restart**, **Status**, and **Open Browser**. They operate on the active Zed worktree. Arguments and working directory use `ZED_WORKTREE_ROOT`; the root is passed as a distinct argument so paths containing spaces work. A `live-server.toml` in that project root is used when present.
+The task file provides two matching sets of five actions: **Start**, **Stop**, **Restart**, **Status**, and **Open Browser**, for either the project root or the directory containing the active file. Start opens the browser automatically. Use the `Current Folder` variants together so stop/restart/status/open target the same server root. Project tasks use `ZED_WORKTREE_ROOT`; current-folder tasks use Zed's `ZED_DIRNAME`. Paths are passed as distinct arguments so spaces are preserved. A `live-server.toml` in the selected root is used when present.
 
 Tasks require `live-server` on Zed's task `PATH`. The MCP extension has its own first-run CLI bootstrap, but tasks do not invoke it; for this AI-free workflow, use the one-time Cargo install above and ensure Cargo's `bin` directory is on Zed's task `PATH`. A port conflict or invalid project configuration is reported in the task terminal.
 
@@ -62,6 +62,10 @@ Zed keybindings are user-level settings. Add bindings like these to your `keymap
     "context": "Workspace",
     "bindings": {
       "ctrl-alt-l": ["task::Spawn", { "task_name": "Live Server: Start" }],
+      "ctrl-alt-f": [
+        "task::Spawn",
+        { "task_name": "Live Server: Start Current Folder" }
+      ],
       "ctrl-alt-r": ["task::Spawn", { "task_name": "Live Server: Restart" }],
       "ctrl-alt-shift-l": [
         "task::Spawn",
@@ -77,4 +81,4 @@ Tasks remain available through Zed's task spawn/rerun actions even without custo
 
 ## Integration limits
 
-The public extension API does not provide the general project UI hooks this server would need for custom Command Palette entries, status-bar UI, context menus, extension-provided keybindings, or automatic start when an HTML file opens. Therefore, the supported no-AI workflow is to run the Zed task once per project session; it cannot truthfully promise a VS Code-style Go Live button or automatic startup on file open. Track possible improvements against [issue #4](https://github.com/bahruzmammad/zedlive-server/issues/4). If Zed adds supported APIs for these behaviors, revisit the task and setup docs together.
+The public extension API does not provide the general project UI hooks this server would need for custom Command Palette entries, status-bar UI, context menus, extension-provided keybindings, or automatic start when an HTML file opens. Zed also does not install this project's global task templates when the extension is installed. Therefore, the current no-AI workflow requires a one-time CLI install and task setup; it cannot truthfully promise a VS Code-style Go Live button, no-Rust setup, or automatic startup on file open. These are tracked in [issue #4](https://github.com/bahruzmammad/zedlive-server/issues/4). If Zed adds supported APIs or we publish a cross-platform binary installer, revisit the task and setup docs together.

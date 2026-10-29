@@ -14,7 +14,7 @@ The Marketplace submission is open as [`zed-industries/extensions#8174`](https:/
 
 See [Zed setup](zed-setup.md) for installing the CLI and using the extension or tasks.
 
-The AI-free onboarding and Zed task workflow follow-up is tracked in [issue #4](https://github.com/bahruzmammad/zedlive-server/issues/4). Keep `.zed/tasks.json` as the source of truth for the five task actions, and update it alongside the setup docs if the workflow changes.
+The AI-free onboarding and Zed task workflow follow-up is tracked in [issue #4](https://github.com/bahruzmammad/zedlive-server/issues/4). Keep `.zed/tasks.json` as the source of truth for the ten task entries, and update it alongside the setup docs if the workflow changes. A Marketplace extension install currently does not install the global task templates or eliminate the Rust/Cargo requirement; do not claim extension-only, no-Rust setup until a supported distribution path is implemented and verified.
 
 ## v1.0.0 release gates
 
