@@ -8,7 +8,7 @@ It serves HTML, CSS, JavaScript, and static assets directly. Editing a watched H
 
 ## Zed extension and marketplace status
 
-The repository now includes a real MCP extension at `zed-extension/`. It starts the separately installed native `live-server mcp` process and exposes seven Agent Panel tools: server lifecycle controls, project configuration diagnostics, and same-server route preview. It does not register custom project commands in the Command Palette, toolbar/status-bar controls, or task registration.
+The repository now includes a real MCP extension at `zed-extension/`. On first start, it uses Cargo to install the native CLI if needed, then launches its MCP process; it exposes seven Agent Panel tools for server lifecycle controls, project configuration diagnostics, and same-server route preview. It does not register custom project commands in the Command Palette, toolbar/status-bar controls, or task registration.
 
 The Marketplace submission is open as [`zed-industries/extensions#8174`](https://github.com/zed-industries/extensions/pull/8174). Registry packaging, sorting, Danger, and CLA checks pass; maintainer review and merge are pending. The repository already contains a [`live-server` extension](https://zed.dev/extensions/live-server), so maintainers must assess whether this Agent Panel interface and its project-diagnostic/route-preview tools are distinct enough to merit another listing. End-to-end lifecycle and browser-reload testing in Zed is still outstanding. Zed plans to deprecate MCP server extensions in favor of the official MCP Registry, so distribution may need migration. Do not describe this integration as Command Palette task controls or as already published.
 

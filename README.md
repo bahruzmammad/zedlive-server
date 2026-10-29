@@ -20,20 +20,20 @@ This serves files directly. It does not compile TypeScript or JSX, run npm scrip
 
 ## Install the CLI
 
-Install the stable Rust toolchain, then install the native server:
+Install Rust and Cargo from <https://rustup.rs>. The MCP extension automatically installs the native CLI on first start. To use the CLI directly or the Zed task templates, install it manually:
 
 ```sh
 cargo install --git https://github.com/bahruzmammad/zedlive-server --branch live-server-mcp-extension --force
 live-server --version
 ```
 
-The Zed MCP tools require the `live-server-mcp-extension` branch until the change is merged into `main`. Make sure `$HOME/.cargo/bin` comes before other commands named `live-server` on the PATH used to launch Zed; on Fish, run `fish_add_path --prepend $HOME/.cargo/bin`. Update with the same install command. Uninstall with `cargo uninstall live-server`. There are no prebuilt release binaries yet.
+The Zed MCP extension requires Cargo, network access for its first start, a writable Cargo install directory, and Zed's process permission. It installs the CLI from the `live-server-mcp-extension` branch into Cargo's normal install directory, then starts that absolute path so an unrelated `live-server` on PATH cannot shadow it. The CLI/tasks require the `live-server-mcp-extension` branch until the change is merged into `main`. Update with the same install command. Uninstall with `cargo uninstall live-server`. There are no prebuilt release binaries yet.
 
 ## Use in Zed
 
 ### Agent Panel MCP tools
 
-The Zed extension is in [`zed-extension/`](zed-extension/). It runs `live-server mcp`; therefore install the CLI first and make sure Cargo's binary directory is on the environment used to launch Zed. Its seven Agent Panel tools are:
+The Zed extension is in [`zed-extension/`](zed-extension/). On first start it automatically installs and launches this project's CLI. Its seven Agent Panel tools are:
 
 - `live_server_start`, `live_server_stop`, `live_server_restart`, and `live_server_status` for the server lifecycle.
 - `live_server_open_browser` for the project root and `live_server_open_page` for a same-server route such as `/products/item.html` or an SPA path.

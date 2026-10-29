@@ -1,19 +1,7 @@
-Install the Live Server command before enabling this MCP server:
+The MCP extension automatically installs this project's CLI the first time it starts, then reuses that installation on later starts. This requires Rust/Cargo to be installed and available to Zed, internet access, and permission to run the process when Zed prompts. The extension installs into Cargo's normal binary directory and launches the absolute path, so another `live-server` command on `PATH` cannot shadow it.
 
-```sh
-cargo install --git https://github.com/bahruzmammad/zedlive-server --branch live-server-mcp-extension --force
-```
+If Zed reports that Cargo is missing, install Rust from <https://rustup.rs>, fully restart Zed, and start the MCP server again. If Cargo installation fails, check network access and that your Cargo install directory is writable. Installation output is sent to the process error stream; MCP protocol output remains on standard output.
 
-On Fish, put Cargo's binary directory before other commands with the same name:
-
-```fish
-fish_add_path --prepend $HOME/.cargo/bin
-type -a live-server
-live-server --version
-```
-
-`$HOME/.cargo/bin/live-server` must appear before any Node/npm `live-server`; this project CLI reports version `0.0.1-alpha`. Fully quit Zed and launch it from that Fish session (for example, `zed .`) so it inherits the corrected `PATH`. The extension starts `live-server mcp`; it does not download or bundle a native executable.
-
-When Zed asks for the extension's process execution capability, allow `live-server --help`. The extension verifies that the resolved command includes this project's MCP server before starting it, and rejects unrelated commands also named `live-server`.
+To install the CLI manually or use the Zed task templates, run `cargo install --git https://github.com/bahruzmammad/zedlive-server --branch live-server-mcp-extension --locked --force --bin live-server`. Tasks require the resulting Cargo binary directory to be on Zed's `PATH`.
 
 The MCP server runs with the active Zed worktree as its working directory. Tools default to that workspace root; an optional project path must resolve inside that worktree. Paths outside the active workspace are rejected.
