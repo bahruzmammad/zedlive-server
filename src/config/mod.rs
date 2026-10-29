@@ -532,6 +532,7 @@ impl ServerConfig {
         }
         let index_path = Path::new(&self.index_file);
         if self.index_file.trim().is_empty()
+            || self.index_file.starts_with('/')
             || index_path.is_absolute()
             || index_path
                 .components()
