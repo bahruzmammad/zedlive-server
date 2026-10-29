@@ -66,12 +66,24 @@ Zed keybindings are user-level settings. Add bindings like these to your `keymap
         "task::Spawn",
         { "task_name": "Live Server: Start Current Folder" }
       ],
+      "ctrl-alt-shift-f": [
+        "task::Spawn",
+        { "task_name": "Live Server: Stop Current Folder" }
+      ],
       "ctrl-alt-r": ["task::Spawn", { "task_name": "Live Server: Restart" }],
+      "ctrl-alt-shift-r": [
+        "task::Spawn",
+        { "task_name": "Live Server: Restart Current Folder" }
+      ],
       "ctrl-alt-shift-l": [
         "task::Spawn",
         { "task_name": "Live Server: Stop" }
       ],
-      "ctrl-alt-o": ["task::Spawn", { "task_name": "Live Server: Open Browser" }]
+      "ctrl-alt-o": ["task::Spawn", { "task_name": "Live Server: Open Browser" }],
+      "ctrl-alt-shift-o": [
+        "task::Spawn",
+        { "task_name": "Live Server: Open Current Folder in Browser" }
+      ]
     }
   }
 ]
